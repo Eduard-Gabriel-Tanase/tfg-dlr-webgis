@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFG - Mapa DLR</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100%; }
+        
+        /* Estilo para nuestro botón flotante */
+        #btn-guardar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000; /* Para que salga por encima del mapa */
+            padding: 15px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #btn-guardar:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <button id="btn-guardar" onclick="enviarLinea()">Guardar Línea DLR</button>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([40.0, -3.0], 6);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Variables para guardar los puntos y dibujar la línea
+        var listaPuntos = [];
+        var lineaVisual = L.polyline([], {color: 'red', weight: 4}).addTo(map);
+
+        // Al hacer clic, guardamos la coordenada y la dibujamos
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // Guardar en la lista
+            listaPuntos.push({ lat: lat, lng: lng });
+            
+            // Añadir a la línea del mapa para que se vea
+            lineaVisual.addLatLng([lat, lng]);
+            
+            // Ponemos un circulito rojo en el vértice
+            L.circleMarker([lat, lng], {radius: 5, color: 'red', fillColor: '#f03', fillOpacity: 1}).addTo(map);
+        });
+
+        // Función para enviar los datos al backend de Python
+        function enviarLinea() {
+            if (listaPuntos.length < 2) {
+                alert("Dibuja al menos 2 apoyos (clics) para formar una línea.");
+                return;
+            }
+
+            fetch('http://127.0.0.1:8000/linea', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puntos: listaPuntos })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Éxito: " + data.mensaje);
+                console.log("Respuesta del servidor:", data);
+            })
+            .catch(error => {
+                alert("Error conectando con el servidor. ¿Está uvicorn encendido?");
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>
