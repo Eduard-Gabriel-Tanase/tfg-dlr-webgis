@@ -3,84 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFG - Mapa DLR</title>
+    <title>Plataforma DLR - Capacidad Dinámica</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
-        body { margin: 0; padding: 0; }
-        #map { height: 100vh; width: 100%; }
-        
-        /* Estilo para nuestro botón flotante */
-        #btn-guardar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000; /* Para que salga por encima del mapa */
-            padding: 15px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        :root {
+            --bg-sidebar: #181824; /* Un poco más oscuro para mejor contraste */
+            --text-main: #e2e2ea;
+            --text-muted: #8b8b9e;
+            --accent-blue: #3e8ed0;
+            --accent-yellow: #d99c2b;
+            --accent-red: #d14d5b;
+            --border-color: #2b2b3c;
         }
-        #btn-guardar:hover { background-color: #0056b3; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f5f8fa;
+        }
+        
+        .leaflet-draw, .leaflet-draw-tooltip { display: none !important; }
+
+        /* PANEL LATERAL COMPACTO PARA 1080p */
+        #sidebar {
+            width: 240px; /* Reducido de 280px */
+            background-color: var(--bg-sidebar);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 15px; /* Reducido */
+            border-bottom: 1px solid var(--border-color);
+            background-color: #14141d;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 15px; /* Reducido */
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .sidebar-header p {
+            margin: 3px 0 0 0;
+            font-size: 11px; /* Reducido */
+            color: var(--text-muted);
+        }
+
+        .panel-section {
+            padding: 15px; /* Reducido */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 10px; /* Reducido */
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* BOTONES DE HERRAMIENTAS COMPACTOS */
+        .btn-modern {
+            width: 100%;
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid transparent;
+            padding: 8px 12px; /* Reducido para hacerlos más finos */
+            border-radius: 4px; /* Bordes menos redondeados, más serios */
+            font-size: 12px; /* Reducido */
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .btn-modern i { width: 14px; font-size: 13px; text-align: center; }
+
+        .btn-modern:hover { background-color: rgba(255,255,255,0.05); }
+
+        .btn-modern.activo-dibujar { background-color: rgba(62, 142, 208, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); }
+        .btn-modern.activo-editar { background-color: rgba(217, 156, 43, 0.1); border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .btn-modern.activo-borrar { background-color: rgba(209, 77, 91, 0.1); border-color: var(--accent-red); color: var(--accent-red); }
+
+        /* BOTÓN IMPORTAR CSV COMPACTO */
+        .btn-upload { 
+            background-color: #212130; 
+            border: 1px dashed #404058; 
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        .btn-upload:hover { background-color: #2a2a3d; color: var(--text-main); }
+        #input-csv { display: none; }
+
+        /* NUEVO BOTÓN DE CALCULAR (Estilo corporativo serio) */
+        .btn-submit {
+            background-color: #252536; /* Oscuro */
+            color: #fff;
+            border-left: 3px solid #10b981; /* Una línea verde sutil a la izquierda para indicar "Ejecución" */
+            justify-content: center;
+            padding: 10px;
+            margin-top: 5px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .btn-submit:hover {
+            background-color: #2c2c3e;
+            border-left: 3px solid #34d399; /* Verde más brillante al pasar el ratón */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* MAPA */
+        #map-container { flex-grow: 1; position: relative; }
+        #map { width: 100%; height: 100%; }
+        
+        .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important; margin-top: 15px !important; }
+        .leaflet-control-zoom a { color: #555 !important; width: 28px !important; height: 28px !important; line-height: 28px !important; }
     </style>
 </head>
 <body>
 
-    <button id="btn-guardar" onclick="enviarLinea()">Guardar Línea DLR</button>
-    <div id="map"></div>
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h2>Módulo Web-GIS</h2>
+            <p>Estimación DLR</p>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">Geometría de traza</div>
+            
+            <button id="btn-dibujar" class="btn-modern" onclick="activarHerramienta('dibujar')">
+                <i class="fa-solid fa-pen-nib"></i> Dibujar línea
+            </button>
+            <button id="btn-editar" class="btn-modern" onclick="activarHerramienta('editar')">
+                <i class="fa-solid fa-up-down-left-right"></i> Editar vértices
+            </button>
+            <button id="btn-borrar" class="btn-modern" onclick="activarHerramienta('borrar')">
+                <i class="fa-solid fa-trash-can"></i> Eliminar línea
+            </button>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">Importación</div>
+            <button class="btn-modern btn-upload" onclick="document.getElementById('input-csv').click()">
+                <i class="fa-solid fa-file-csv"></i> Cargar archivo .CSV
+            </button>
+            <input type="file" id="input-csv" accept=".csv" onchange="manejarArchivo(event)">
+        </div>
+
+        <div class="panel-section" style="border-bottom: none; margin-top: auto; background-color: #14141d;">
+            <button class="btn-modern btn-submit" onclick="enviarLinea()">
+                <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Ejecutar Cálculo
+            </button>
+        </div>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([40.0, -3.0], 6);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
+    <script>
+        var map = L.map('map', { doubleClickZoom: false, zoomControl: false }).setView([40.0, -3.0], 6); 
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+                // MAPA NORMAL EN ALTA RESOLUCIÓN
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap',
+            detectRetina: true, // Fuerza a pantallas modernas a pedir más resolución
+            tileSize: 512,      // Descarga bloques más grandes
+            zoomOffset: -1      // Compensa el tamaño para que no se vea el texto gigante
         }).addTo(map);
 
-        // Variables para guardar los puntos y dibujar la línea
-        var listaPuntos = [];
-        var lineaVisual = L.polyline([], {color: 'red', weight: 4}).addTo(map);
 
-        // Al hacer clic, guardamos la coordenada y la dibujamos
-        map.on('click', function(e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
 
-            // Guardar en la lista
-            listaPuntos.push({ lat: lat, lng: lng });
-            
-            // Añadir a la línea del mapa para que se vea
-            lineaVisual.addLatLng([lat, lng]);
-            
-            // Ponemos un circulito rojo en el vértice
-            L.circleMarker([lat, lng], {radius: 5, color: 'red', fillColor: '#f03', fillOpacity: 1}).addTo(map);
+        var drawControl = new L.Draw.Polyline(map, { shapeOptions: { color: '#d14d5b', weight: 4, opacity: 0.9 } });
+        var editControl = new L.EditToolbar.Edit(map, { featureGroup: drawnItems });
+        var deleteControl = new L.EditToolbar.Delete(map, { featureGroup: drawnItems });
+
+        var modoActual = null;
+
+        function desactivarTodo() {
+            drawControl.disable(); editControl.disable(); deleteControl.disable();
+            modoActual = null;
+            document.getElementById('btn-dibujar').className = "btn-modern";
+            document.getElementById('btn-editar').className = "btn-modern";
+            document.getElementById('btn-borrar').className = "btn-modern";
+        }
+
+        function activarHerramienta(herramienta) {
+            desactivarTodo(); 
+            modoActual = herramienta;
+
+            if (herramienta === 'dibujar') {
+                drawControl.enable();
+                document.getElementById('btn-dibujar').classList.add('activo-dibujar');
+            } 
+            else if (herramienta === 'editar' && drawnItems.getLayers().length > 0) {
+                editControl.enable();
+                document.getElementById('btn-editar').classList.add('activo-editar');
+                map.once('click', function() { if(modoActual === 'editar') { editControl.save(); desactivarTodo(); }});
+            } 
+            else if (herramienta === 'borrar' && drawnItems.getLayers().length > 0) {
+                deleteControl.enable();
+                document.getElementById('btn-borrar').classList.add('activo-borrar');
+                map.once('click', function(e) {
+                    if(modoActual === 'borrar' && !e.originalEvent.target.classList.contains('leaflet-interactive')) {
+                        deleteControl.save(); desactivarTodo();
+                    }
+                });
+            }
+        }
+
+        map.on(L.Draw.Event.CREATED, function (e) {
+            drawnItems.clearLayers(); 
+            drawnItems.addLayer(e.layer);
+            desactivarTodo();
         });
 
-        // Función para enviar los datos al backend de Python
-        function enviarLinea() {
-            if (listaPuntos.length < 2) {
-                alert("Dibuja al menos 2 apoyos (clics) para formar una línea.");
-                return;
+        map.on('contextmenu', function (e) {
+            if (modoActual === 'dibujar') {
+                drawControl.deleteLastVertex();
+                drawControl.completeShape();
+                desactivarTodo();
             }
+        });
+
+        
+        // Lógica de carga de archivo CSV conectada al Backend
+        async function manejarArchivo(event) {
+            var archivo = event.target.files[0];
+            if (!archivo) return;
+
+            // Creamos un formulario "invisible" para enviar el archivo
+            var formData = new FormData();
+            formData.append("file", archivo);
+
+            try {
+                // 1. Enviamos el archivo CSV a nuestro backend FastAPI
+                var response = await fetch('http://127.0.0.1:8000/upload-csv', {
+                    method: 'POST',
+                    body: formData // No ponemos Content-Type porque FormData lo gestiona solo
+                });
+
+                if (!response.ok) {
+                    var err = await response.json();
+                    throw new Error(err.detail || "Error en el servidor");
+                }
+
+                // 2. Python nos devuelve las coordenadas limpias
+                var data = await response.json();
+                var puntos_recibidos = data.puntos;
+
+                // 3. Limpiamos cualquier línea que hubiese dibujada antes
+                drawnItems.clearLayers();
+                desactivarTodo();
+
+                // 4. Dibujamos la nueva línea que ha procesado Python
+                var nuevaLinea = L.polyline(puntos_recibidos, { color: '#d14d5b', weight: 4, opacity: 0.9 });
+                drawnItems.addLayer(nuevaLinea);
+
+                // 5. Truco clave: Movemos el mapa (hacemos un zoom automático) para centrar la vista en la nueva línea
+                map.fitBounds(nuevaLinea.getBounds());
+                
+                alert("Éxito: " + data.mensaje + ". Se han cargado " + puntos_recibidos.length + " apoyos.");
+
+            } catch (error) {
+                alert("Error subiendo CSV: " + error.message);
+                console.error("Error:", error);
+            } finally {
+                event.target.value = ''; // Reseteamos el input
+            }
+        }
+
+
+        function enviarLinea() {
+            desactivarTodo();
+            var capas = drawnItems.getLayers();
+            if (capas.length === 0) { alert("Defina una geometría primero."); return; }
+
+            var latlngs = capas[0].getLatLngs();
+            var listaPuntos = latlngs.map(p => ({ lat: p.lat, lng: p.lng }));
 
             fetch('http://127.0.0.1:8000/linea', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ puntos: listaPuntos })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert("Éxito: " + data.mensaje);
-                console.log("Respuesta del servidor:", data);
-            })
-            .catch(error => {
-                alert("Error conectando con el servidor. ¿Está uvicorn encendido?");
-                console.error("Error:", error);
-            });
+            }).then(res => res.json()).then(data => alert("Ejecución enviada al servidor backend."))
+              .catch(err => alert("Fallo de conexión con el motor de cálculo (Uvicorn)."));
         }
     </script>
 </body>
