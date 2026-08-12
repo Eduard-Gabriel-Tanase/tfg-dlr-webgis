@@ -4,36 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma DLR - Capacidad Dinámica</title>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
+    
     <style>
         :root {
-            --bg-sidebar: #181824; /* Un poco más oscuro para mejor contraste */
+            --bg-sidebar: #181824; 
             --text-main: #e2e2ea;
             --text-muted: #8b8b9e;
             --accent-blue: #3e8ed0;
             --accent-yellow: #d99c2b;
             --accent-red: #d14d5b;
             --border-color: #2b2b3c;
+            --bg-panel: #212130;
         }
 
-        body { 
-            margin: 0; padding: 0; 
+        body {
+            margin: 0;
+            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             height: 100vh;
             overflow: hidden;
             background-color: #f5f8fa;
         }
-        
-        .leaflet-draw, .leaflet-draw-tooltip { display: none !important; }
 
-        /* PANEL LATERAL COMPACTO PARA 1080p */
+        .leaflet-draw-toolbar { display: none !important; }
+        
         #sidebar {
-            width: 240px; /* Reducido de 280px */
+            width: 260px; 
             background-color: var(--bg-sidebar);
             color: var(--text-main);
             display: flex;
@@ -43,31 +43,21 @@
         }
 
         .sidebar-header {
-            padding: 15px; /* Reducido */
+            padding: 15px; 
             border-bottom: 1px solid var(--border-color);
             background-color: #14141d;
         }
 
-        .sidebar-header h2 {
-            margin: 0;
-            font-size: 15px; /* Reducido */
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .sidebar-header p {
-            margin: 3px 0 0 0;
-            font-size: 11px; /* Reducido */
-            color: var(--text-muted);
-        }
+        .sidebar-header h2 { margin: 0; font-size: 15px; font-weight: 600; color: #fff; }
+        .sidebar-header p { margin: 3px 0 0 0; font-size: 11px; color: var(--text-muted); }
 
         .panel-section {
-            padding: 15px; /* Reducido */
+            padding: 15px;
             border-bottom: 1px solid var(--border-color);
         }
 
         .section-title {
-            font-size: 10px; /* Reducido */
+            font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 0.5px;
@@ -75,15 +65,14 @@
             font-weight: 600;
         }
 
-        /* BOTONES DE HERRAMIENTAS COMPACTOS */
         .btn-modern {
             width: 100%;
             background-color: transparent;
             color: var(--text-main);
             border: 1px solid transparent;
-            padding: 8px 12px; /* Reducido para hacerlos más finos */
-            border-radius: 4px; /* Bordes menos redondeados, más serios */
-            font-size: 12px; /* Reducido */
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
             text-align: left;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -94,46 +83,274 @@
         }
 
         .btn-modern i { width: 14px; font-size: 13px; text-align: center; }
-
-        .btn-modern:hover { background-color: rgba(255,255,255,0.05); }
+        .btn-modern:hover:not(:disabled) { background-color: rgba(255,255,255,0.05); }
+        .btn-modern:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-modern.activo-dibujar { background-color: rgba(62, 142, 208, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); }
         .btn-modern.activo-editar { background-color: rgba(217, 156, 43, 0.1); border-color: var(--accent-yellow); color: var(--accent-yellow); }
         .btn-modern.activo-borrar { background-color: rgba(209, 77, 91, 0.1); border-color: var(--accent-red); color: var(--accent-red); }
 
-        /* BOTÓN IMPORTAR CSV COMPACTO */
-        .btn-upload { 
-            background-color: #212130; 
-            border: 1px dashed #404058; 
+        .btn-upload {
+            background-color: var(--bg-panel);
+            border: 1px dashed #404058;
             justify-content: center;
             color: var(--text-muted);
         }
         .btn-upload:hover { background-color: #2a2a3d; color: var(--text-main); }
         #input-csv { display: none; }
 
-        /* NUEVO BOTÓN DE CALCULAR (Estilo corporativo serio) */
-        .btn-submit {
-            background-color: #252536; /* Oscuro */
+        .select-modern-container { position: relative; width: 100%; }
+        select.btn-modern {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
             color: #fff;
-            border-left: 3px solid #10b981; /* Una línea verde sutil a la izquierda para indicar "Ejecución" */
+            padding-right: 30px; 
+            appearance: none; 
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        select.btn-modern:hover { background-color: #2a2a3d; border-color: var(--accent-blue); }
+        select.btn-modern option { background-color: #1a1a24; color: #fff; }
+        .select-modern-container::after {
+            content: '\f078';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 11px;
+        }
+
+        .btn-submit {
+            background-color: #252536; 
+            color: #fff;
+            border-left: 3px solid #10b981; 
             justify-content: center;
             padding: 10px;
             margin-top: 5px;
             font-weight: 500;
             letter-spacing: 0.3px;
         }
-        .btn-submit:hover {
+        .btn-submit:hover:not(:disabled) {
             background-color: #2c2c3e;
-            border-left: 3px solid #34d399; /* Verde más brillante al pasar el ratón */
+            border-left: 3px solid #34d399; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* MAPA */
+        .status-msg {
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+
         #map-container { flex-grow: 1; position: relative; }
         #map { width: 100%; height: 100%; }
+
+        /* BARRA FLOTANTE DE HERRAMIENTAS (Abajo centro) */
+        .gis-toolbar {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(24, 24, 36, 0.85);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            border: 1px solid var(--accent-blue);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            gap: 15px;
+        }
+        .gis-shortcut {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+            box-shadow: 0 2px 0 #ccc;
+            margin: 0 4px;
+        }
+        .gis-toolbar i { color: var(--accent-blue); font-size: 14px; }
+
+        /* ALERTAS FLOTANTES (Arriba centro) PARA NO INTERFERIR CON LA BARRA */
+        #map-alert {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(217, 156, 43, 0.95);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+            margin-top: 15px !important;
+        }
+
+        .node-label {
+            background-color: var(--bg-sidebar);
+            color: var(--text-main);
+            border: 2px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            text-align: center;
+            line-height: 14px;
+            font-size: 9px;
+            font-weight: bold;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+            cursor: move;
+        }
+
+        /* CAJA FLOTANTE PARA INDICAR QUE SE ESTÁN DESCARGANDO CAPAS */
+        #layer-loader {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background-color: rgba(24, 24, 36, 0.9);
+            color: #10b981;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+            border: 1px solid #10b981;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* LEYENDA DEL MAPA DE COLOR */
+        .info.legend {
+            background: rgba(24, 24, 36, 0.9);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            font-size: 11px;
+            line-height: 18px;
+        }
+        .info.legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.8;
+            border-radius: 2px;
+        }
+
+        /* PANEL FLOTANTE DE RESULTADOS METEOROLÓGICOS */
+        #panel-resultados {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-main);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        .res-header {
+            padding: 12px 15px;
+            background-color: #14141d;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .res-header h3 { margin: 0; font-size: 13px; color: #fff; }
+        .res-header button { background: none; border: none; color: var(--text-muted); cursor: pointer; }
+        .res-header button:hover { color: #fff; }
+
+        .res-body { padding: 15px; }
+
+        .res-stats {
+            background-color: var(--bg-panel);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .res-stats p { margin: 5px 0; font-size: 12px; }
+        .res-stats span { font-weight: bold; color: #fff; float: right; }
+
+        .res-nodos {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .nodo-item {
+            background-color: var(--bg-panel);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            border-left: 2px solid var(--accent-blue);
+        }
+        .nodo-item.critico {
+            border-left: 2px solid var(--accent-red);
+            background-color: rgba(209, 77, 91, 0.1);
+        }
+        .nodo-title {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .nodo-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            color: var(--text-muted);
+        }
         
-        .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important; margin-top: 15px !important; }
-        .leaflet-control-zoom a { color: #555 !important; width: 28px !important; height: 28px !important; line-height: 28px !important; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-sidebar); }
+        ::-webkit-scrollbar-thumb { background: #404058; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5a5a75; }
+
+        /* Estilo elegante para el control de capas nativo de Leaflet */
+        .leaflet-control-layers {
+            background-color: rgba(24, 24, 36, 0.95) !important;
+            color: #fff !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            padding: 5px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        }
+        .leaflet-control-layers-list { margin-bottom: 0 !important; }
+        .leaflet-control-layers-list label { 
+            color: #e2e2ea; font-size: 12px; margin: 4px 0; cursor: pointer;
+        }
+        .leaflet-control-layers-list input[type="radio"] { 
+            accent-color: var(--accent-blue); margin-right: 8px; cursor: pointer;
+        }
+        .leaflet-control-layers-separator { display: none !important; }
+
     </style>
 </head>
 <body>
@@ -146,171 +363,569 @@
 
         <div class="panel-section">
             <div class="section-title">Geometría de traza</div>
-            
             <button id="btn-dibujar" class="btn-modern" onclick="activarHerramienta('dibujar')">
-                <i class="fa-solid fa-pen-nib"></i> Dibujar línea
+                <i class="fa-solid fa-pen-nib"></i> Trazado Manual
             </button>
             <button id="btn-editar" class="btn-modern" onclick="activarHerramienta('editar')">
-                <i class="fa-solid fa-up-down-left-right"></i> Editar vértices
+                <i class="fa-solid fa-up-down-left-right"></i> Editar Vértices
             </button>
             <button id="btn-borrar" class="btn-modern" onclick="activarHerramienta('borrar')">
-                <i class="fa-solid fa-trash-can"></i> Eliminar línea
+                <i class="fa-solid fa-trash-can"></i> Eliminar Traza
             </button>
         </div>
 
         <div class="panel-section">
             <div class="section-title">Importación</div>
-            <button class="btn-modern btn-upload" onclick="document.getElementById('input-csv').click()">
-                <i class="fa-solid fa-file-csv"></i> Cargar archivo .CSV
+            <button class="btn-modern btn-upload" id="btn-upload" onclick="document.getElementById('input-csv').click()">
+                <i class="fa-solid fa-file-excel"></i> Importar Archivo
             </button>
-            <input type="file" id="input-csv" accept=".csv" onchange="manejarArchivo(event)">
+            <input type="file" id="input-csv" accept=".csv, .zip, .xlsx, .xls" onchange="manejarArchivo(event)">
+            <div id="upload-status" class="status-msg"></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">Parámetros de Línea</div>
+            <div class="select-modern-container">
+                <select id="conductor-type" class="btn-modern">
+                    <option value="Opción A (Prueba)" selected>Opción A (Prueba)</option>
+                    <option value="Opción B (Prueba)">Opción B (Prueba)</option>
+                    <option value="Opción C (Prueba)">Opción C (Prueba)</option>
+                </select>
+            </div>
         </div>
 
         <div class="panel-section" style="border-bottom: none; margin-top: auto; background-color: #14141d;">
-            <button class="btn-modern btn-submit" onclick="enviarLinea()">
-                <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Ejecutar Cálculo
+            <button class="btn-modern btn-submit" id="btn-calcular" onclick="enviarLinea()">
+                <i class="fa-solid fa-bolt" style="color: #10b981;"></i> Calcular DLR
             </button>
+            <div id="dlr-status" class="status-msg"></div>
         </div>
     </div>
 
     <div id="map-container">
         <div id="map"></div>
+        
+        <!-- ALERTA FLOTANTE SUPERIOR -->
+        <div id="map-alert">
+            <i class="fa-solid fa-circle-exclamation"></i> <span id="map-alert-text">Mensaje</span>
+        </div>
+
+        <div id="gis-toolbar" class="gis-toolbar">
+            <i class="fa-solid fa-pen-ruler"></i>
+            <span id="gis-toolbar-text">Modo Trazado</span>
+        </div>
+        
+        <div id="layer-loader"><i class='fa-solid fa-spinner fa-spin'></i> Descargando datos numéricos...</div>
+
+        <div id="panel-resultados">
+            <div class="res-header">
+                <h3>Análisis Meteorológico</h3>
+                <button onclick="document.getElementById('panel-resultados').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="res-body" id="res-content"></div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/spatialsparks/Leaflet.idw@master/src/leaflet-idw.js"></script>
 
     <script>
-        var map = L.map('map', { doubleClickZoom: false, zoomControl: false }).setView([40.0, -3.0], 6); 
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        var map = L.map('map', { doubleClickZoom: false, zoomControl: false }).setView([39.5, -3.5], 6);
+        L.control.zoom({ position: 'topleft' }).addTo(map); 
 
-                // MAPA NORMAL EN ALTA RESOLUCIÓN
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap',
-            detectRetina: true, // Fuerza a pantallas modernas a pedir más resolución
-            tileSize: 512,      // Descarga bloques más grandes
-            zoomOffset: -1      // Compensa el tamaño para que no se vea el texto gigante
+        var capaOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '&copy; OpenStreetMap', detectRetina: true
         }).addTo(map);
+        
+        var capaNinguna = L.layerGroup().addTo(map); 
+        var capaTemp = L.layerGroup();
+        var capaViento = L.layerGroup();
+        var capaRad = L.layerGroup();
 
+        var opcionesMeteo = {
+            "Sin Superficie Climática": capaNinguna,
+            "Temperatura Ambiente": capaTemp,
+            "Velocidad del Viento": capaViento,
+            "Radiación Solar Global": capaRad
+        };
+        
+        L.control.layers(opcionesMeteo, null, { position: 'topright', collapsed: true }).addTo(map);
+
+        var cacheCalculada = { temp: false, viento: false, rad: false };
+        var dataMeteo = null;
+        var activeLegend = null; 
+
+        var alertTimer = null;
+        function mostrarAlerta(mensaje, isError = false) {
+            var alertBox = document.getElementById('map-alert');
+            var alertText = document.getElementById('map-alert-text');
+            
+            alertBox.style.backgroundColor = isError ? 'rgba(209, 77, 91, 0.95)' : 'rgba(217, 156, 43, 0.95)';
+            alertText.innerHTML = mensaje;
+            alertBox.style.display = 'block';
+            
+            if (alertTimer) clearTimeout(alertTimer);
+            alertTimer = setTimeout(function() {
+                alertBox.style.display = 'none';
+            }, 3500);
+        }
+
+        function crearLeyenda(title, scale, limits, units) {
+            if (activeLegend) map.removeControl(activeLegend);
+            activeLegend = L.control({position: 'bottomright'});
+            activeLegend.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'info legend');
+                div.innerHTML = `<strong>${title} (${units})</strong><br>`;
+                for (var i = 0; i < limits.length; i++) {
+                    div.innerHTML += '<i style="background:' + scale(limits[i]) + '"></i> ' +
+                        limits[i] + (limits[i + 1] ? '&ndash;' + limits[i + 1] + '<br>' : '+');
+                }
+                return div;
+            };
+            activeLegend.addTo(map);
+        }
+
+        function restaurarLeyenda(tipo) {
+            if (tipo === "temp") {
+                var c = { 0.0: '#0000ff', 0.2: '#00ffff', 0.4: '#00ff00', 0.6: '#ffff00', 0.8: '#ff7800', 1.0: '#ff0000' };
+                var scaleT = v => v<10?c[0.0]:v<15?c[0.2]:v<20?c[0.4]:v<25?c[0.6]:v<30?c[0.8]:c[1.0];
+                crearLeyenda("Temperatura", scaleT, [0, 10, 15, 20, 25, 30], "ºC");
+            }
+            if (tipo === "viento") {
+                var c = { 0.0: '#ffffff', 0.2: '#00ffff', 0.5: '#0000ff', 0.8: '#ff00ff', 1.0: '#800080' };
+                var scaleV = v => v<2?c[0.0]:v<5?c[0.2]:v<8?c[0.5]:v<12?c[0.8]:c[1.0];
+                crearLeyenda("Viento", scaleV, [0, 2, 5, 8, 12], "m/s");
+            }
+            if (tipo === "rad") {
+                var c = { 0.0: '#000033', 0.2: '#4a2511', 0.5: '#e66100', 0.8: '#ffcc00', 1.0: '#ffffff' };
+                var scaleR = v => v<200?c[0.0]:v<400?c[0.2]:v<600?c[0.5]:v<800?c[0.8]:c[1.0];
+                crearLeyenda("Radiación Solar", scaleR, [0, 200, 400, 600, 800], "W/m²");
+            }
+        }
+
+        map.on('baselayerchange', function(e) {
+            if (activeLegend) { map.removeControl(activeLegend); activeLegend = null; }
+            
+            var loader = document.getElementById('layer-loader');
+            var tipo = null;
+            
+            if(e.name === "Temperatura Ambiente") tipo = "temp";
+            if(e.name === "Velocidad del Viento") tipo = "viento";
+            if(e.name === "Radiación Solar Global") tipo = "rad";
+
+            if (!tipo) return; 
+
+            if (!cacheCalculada[tipo]) {
+                loader.style.display = 'block';
+                loader.style.color = '#10b981';
+                loader.style.borderColor = '#10b981';
+                
+                if (!dataMeteo) {
+                    loader.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Extrayendo Malla Numérica...";
+                    fetch('http://127.0.0.1:8000/api/capas_atmosfericas')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) throw new Error(data.error);
+                            dataMeteo = data;
+                            calcularYMostrarIDW(tipo, e.layer, loader);
+                        })
+                        .catch(err => {
+                            loader.style.color = 'var(--accent-red)';
+                            loader.style.borderColor = 'var(--accent-red)';
+                            loader.innerHTML = "<i class='fa-solid fa-xmark'></i> Error en modelo numérico";
+                            setTimeout(() => { loader.style.display = 'none'; }, 3000);
+                        });
+                } else {
+                    calcularYMostrarIDW(tipo, e.layer, loader);
+                }
+            } else {
+                restaurarLeyenda(tipo);
+            }
+        });
+
+        function calcularYMostrarIDW(tipo, layerContainer, loader) {
+            loader.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Renderizando superficie continua...";
+            
+            setTimeout(() => {
+                var puntosRaw = dataMeteo[tipo];
+                var puntosParsed = puntosRaw.map(p => [p.lat, p.lng, parseFloat(p.val)]);
+
+                var maxVal = 40, grad = {};
+                
+                if (tipo === "temp") {
+                    maxVal = 40;
+                    grad = { 0.0: '#0000ff', 0.2: '#00ffff', 0.4: '#00ff00', 0.6: '#ffff00', 0.8: '#ff7800', 1.0: '#ff0000' };
+                    restaurarLeyenda("temp");
+                }
+                if (tipo === "viento") {
+                    maxVal = 20;
+                    grad = { 0.0: '#ffffff', 0.2: '#00ffff', 0.5: '#0000ff', 0.8: '#ff00ff', 1.0: '#800080' };
+                    restaurarLeyenda("viento");
+                }
+                if (tipo === "rad") {
+                    maxVal = 1000;
+                    grad = { 0.0: '#000033', 0.2: '#4a2511', 0.5: '#e66100', 0.8: '#ffcc00', 1.0: '#ffffff' };
+                    restaurarLeyenda("rad");
+                }
+
+                var idwLayer = L.idwLayer(puntosParsed, {
+                    opacity: 0.6,
+                    maxZoom: 10,
+                    cellSize: 20, 
+                    exp: 3,       
+                    max: maxVal,
+                    gradient: grad
+                });
+
+                idwLayer.addTo(layerContainer);
+                cacheCalculada[tipo] = true;
+                loader.style.display = 'none';
+
+            }, 100);
+        }
 
         var drawnItems = new L.FeatureGroup();
+        // Variable para guardar una "copia de seguridad" de la línea antes de entrar a editar
+        var backupEdicion = []; 
         map.addLayer(drawnItems);
-
-        var drawControl = new L.Draw.Polyline(map, { shapeOptions: { color: '#d14d5b', weight: 4, opacity: 0.9 } });
-        var editControl = new L.EditToolbar.Edit(map, { featureGroup: drawnItems });
-        var deleteControl = new L.EditToolbar.Delete(map, { featureGroup: drawnItems });
-
+        
         var modoActual = null;
 
+        var customDibujando = false;
+        var arrPuntos = [];
+        var tempLineLayer = null;
+        var tempPreviewLayer = null;
+        var tempNodeMarkers = [];
+        var mouseLatLng = null;
+
+        function setModoBloqueo(bloqueado) {
+            document.getElementById('btn-calcular').disabled = bloqueado;
+            document.getElementById('btn-upload').disabled = bloqueado;
+            document.getElementById('conductor-type').disabled = bloqueado;
+            if (bloqueado) document.getElementById('panel-resultados').style.display = 'none';
+        }
+
+        map.on('mousemove', function(e) {
+            mouseLatLng = e.latlng;
+            if (customDibujando && arrPuntos.length > 0) {
+                if (tempPreviewLayer) { map.removeLayer(tempPreviewLayer); }
+                tempPreviewLayer = L.polyline([arrPuntos[arrPuntos.length - 1], mouseLatLng], {
+                    color: '#d14d5b', weight: 4, dashArray: '5, 10', opacity: 0.6
+                }).addTo(map);
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (customDibujando) {
+                if (e.key === '1') { 
+                    if (mouseLatLng) {
+                        var nuevoPunto = L.latLng(mouseLatLng.lat, mouseLatLng.lng);
+                        arrPuntos.push(nuevoPunto);
+                        actualizarDibujoCustom();
+                    }
+                } else if (e.key === '2') { 
+                    if (arrPuntos.length > 0) {
+                        arrPuntos.pop();
+                        actualizarDibujoCustom();
+                    }
+                } else if (e.key === '3') { 
+                    if (arrPuntos.length >= 2) {
+                        finalizarDibujoCustom();
+                    } else {
+                        mostrarAlerta("La línea debe tener al menos 2 apoyos.");
+                    }
+                } else if (e.key === '0') {
+                    // Si estábamos en modo dibujar, borramos todo
+                    if (modoActual === 'dibujar') {
+                        drawnItems.clearLayers();
+                        desactivarTodo();
+                    } 
+                    // Si estábamos en modo editar, CANCELAMOS la edición y restauramos el backup original
+                    else if (modoActual === 'editar') {
+                        restaurarBackupEdicion();
+                        desactivarTodo();
+                        mostrarAlerta("Edición cancelada. Se ha restaurado la línea original.");
+                    }
+                }
+            }
+        });
+
+        function actualizarDibujoCustom() {
+            if (tempLineLayer) map.removeLayer(tempLineLayer);
+            if (tempPreviewLayer) { map.removeLayer(tempPreviewLayer); tempPreviewLayer = null; }
+
+            if (arrPuntos.length > 0) {
+                tempLineLayer = L.polyline(arrPuntos, { color: '#d14d5b', weight: 4, opacity: 0.9 }).addTo(map);
+            }
+
+            while (tempNodeMarkers.length > arrPuntos.length) {
+                var m = tempNodeMarkers.pop();
+                map.removeLayer(m);
+            }
+            
+            arrPuntos.forEach((p, idx) => {
+                if (idx < tempNodeMarkers.length) {
+                    tempNodeMarkers[idx].setLatLng(p);
+                } else {
+                    var icon = L.divIcon({ className: 'node-label', html: (idx + 1), iconSize: [18,18], iconAnchor: [9,9] });
+                    var marker = L.marker(p, { icon: icon, draggable: true }).addTo(map);
+                    
+                    marker.on('drag', function(e) {
+                        var nombreAntiguo = arrPuntos[idx].nombre; 
+                        arrPuntos[idx] = e.latlng;
+                        if(nombreAntiguo) arrPuntos[idx].nombre = nombreAntiguo;
+                        if (tempLineLayer) { tempLineLayer.setLatLngs(arrPuntos); }
+                    });
+                    
+                    tempNodeMarkers.push(marker);
+                }
+            });
+        }
+
+        function finalizarDibujoCustom() {
+            drawnItems.clearLayers();
+            var nuevaLinea = L.polyline(arrPuntos, { color: '#d14d5b', weight: 4, opacity: 0.9 });
+            
+            arrPuntos.forEach((p, idx) => {
+                var nombreNodo = p.nombre || ("Apoyo " + (idx + 1));
+                nuevaLinea.getLatLngs()[idx].nombre = nombreNodo;
+                
+                var icon = L.divIcon({ className: 'node-label', html: (idx + 1), iconSize: [18,18], iconAnchor: [9,9] });
+                var marker = L.marker(p, { icon: icon, interactive: false });
+                drawnItems.addLayer(marker);
+            });
+            drawnItems.addLayer(nuevaLinea);
+            
+            desactivarTodo();
+        }
+        
+        // Función para restaurar la línea como estaba antes de darle a Editar
+        function restaurarBackupEdicion() {
+            drawnItems.clearLayers();
+            if (backupEdicion.length > 0) {
+                var lineaOriginal = L.polyline(backupEdicion, { color: '#d14d5b', weight: 4, opacity: 0.9 });
+                backupEdicion.forEach((p, idx) => {
+                    lineaOriginal.getLatLngs()[idx].nombre = p.nombre;
+                    var icon = L.divIcon({ className: 'node-label', html: (idx + 1), iconSize: [18,18], iconAnchor: [9,9] });
+                    var marker = L.marker(p, { icon: icon, interactive: false });
+                    drawnItems.addLayer(marker);
+                });
+                drawnItems.addLayer(lineaOriginal);
+            }
+        }
+
         function desactivarTodo() {
-            drawControl.disable(); editControl.disable(); deleteControl.disable();
+            customDibujando = false;
+            arrPuntos = [];
+            backupEdicion = []; // Limpiamos el backup de memoria
+            if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
+            if (tempPreviewLayer) { map.removeLayer(tempPreviewLayer); tempPreviewLayer = null; }
+            tempNodeMarkers.forEach(m => map.removeLayer(m));
+            tempNodeMarkers = [];
             modoActual = null;
-            document.getElementById('btn-dibujar').className = "btn-modern";
-            document.getElementById('btn-editar').className = "btn-modern";
-            document.getElementById('btn-borrar').className = "btn-modern";
+            
+            setModoBloqueo(false);
+            
+            document.getElementById('btn-dibujar').className = 'btn-modern';
+            document.getElementById('btn-editar').className = 'btn-modern';
+            document.getElementById('btn-borrar').className = 'btn-modern';
+            
+            document.getElementById('gis-toolbar').style.display = 'none';
         }
 
         function activarHerramienta(herramienta) {
+            if (herramienta === 'borrar') {
+                drawnItems.clearLayers();
+                desactivarTodo(); 
+                return;
+            }
+
+            if (modoActual === herramienta) { 
+                // Si damos click de nuevo al botón de editar, se cancela y se restaura lo original
+                if (modoActual === 'editar') { restaurarBackupEdicion(); }
+                desactivarTodo(); 
+                return; 
+            }
+
             desactivarTodo(); 
             modoActual = herramienta;
-
+            var toolbar = document.getElementById('gis-toolbar');
+            var toolbarText = document.getElementById('gis-toolbar-text');
+            
             if (herramienta === 'dibujar') {
-                drawControl.enable();
-                document.getElementById('btn-dibujar').classList.add('activo-dibujar');
-            } 
-            else if (herramienta === 'editar' && drawnItems.getLayers().length > 0) {
-                editControl.enable();
-                document.getElementById('btn-editar').classList.add('activo-editar');
-                map.once('click', function() { if(modoActual === 'editar') { editControl.save(); desactivarTodo(); }});
-            } 
-            else if (herramienta === 'borrar' && drawnItems.getLayers().length > 0) {
-                deleteControl.enable();
-                document.getElementById('btn-borrar').classList.add('activo-borrar');
-                map.once('click', function(e) {
-                    if(modoActual === 'borrar' && !e.originalEvent.target.classList.contains('leaflet-interactive')) {
-                        deleteControl.save(); desactivarTodo();
-                    }
-                });
-            }
-        }
-
-        map.on(L.Draw.Event.CREATED, function (e) {
-            drawnItems.clearLayers(); 
-            drawnItems.addLayer(e.layer);
-            desactivarTodo();
-        });
-
-        map.on('contextmenu', function (e) {
-            if (modoActual === 'dibujar') {
-                drawControl.deleteLastVertex();
-                drawControl.completeShape();
-                desactivarTodo();
-            }
-        });
-
-        
-        // Lógica de carga de archivo CSV conectada al Backend
-        async function manejarArchivo(event) {
-            var archivo = event.target.files[0];
-            if (!archivo) return;
-
-            // Creamos un formulario "invisible" para enviar el archivo
-            var formData = new FormData();
-            formData.append("file", archivo);
-
-            try {
-                // 1. Enviamos el archivo CSV a nuestro backend FastAPI
-                var response = await fetch('http://127.0.0.1:8000/upload-csv', {
-                    method: 'POST',
-                    body: formData // No ponemos Content-Type porque FormData lo gestiona solo
-                });
-
-                if (!response.ok) {
-                    var err = await response.json();
-                    throw new Error(err.detail || "Error en el servidor");
-                }
-
-                // 2. Python nos devuelve las coordenadas limpias
-                var data = await response.json();
-                var puntos_recibidos = data.puntos;
-
-                // 3. Limpiamos cualquier línea que hubiese dibujada antes
-                drawnItems.clearLayers();
-                desactivarTodo();
-
-                // 4. Dibujamos la nueva línea que ha procesado Python
-                var nuevaLinea = L.polyline(puntos_recibidos, { color: '#d14d5b', weight: 4, opacity: 0.9 });
-                drawnItems.addLayer(nuevaLinea);
-
-                // 5. Truco clave: Movemos el mapa (hacemos un zoom automático) para centrar la vista en la nueva línea
-                map.fitBounds(nuevaLinea.getBounds());
+                drawnItems.clearLayers(); 
+                customDibujando = true;
+                setModoBloqueo(true);
                 
-                alert("Éxito: " + data.mensaje + ". Se han cargado " + puntos_recibidos.length + " apoyos.");
-
-            } catch (error) {
-                alert("Error subiendo CSV: " + error.message);
-                console.error("Error:", error);
-            } finally {
-                event.target.value = ''; // Reseteamos el input
+                document.getElementById('btn-dibujar').classList.add('activo-dibujar');
+                toolbar.style.display = 'flex';
+                toolbar.style.borderColor = 'var(--accent-blue)';
+                toolbarText.innerHTML = "<span>MODO TRAZADO: </span> <span class='gis-shortcut'>1</span> Fijar vértice <span class='gis-shortcut'>2</span> Deshacer <span class='gis-shortcut'>3</span> Finalizar <span class='gis-shortcut'>0</span> Cancelar/Borrar";
+            
+            } else if (herramienta === 'editar') {
+                var lineas = drawnItems.getLayers().filter(c => c instanceof L.Polyline && !(c instanceof L.Polygon));
+                
+                if (lineas.length === 0) {
+                    mostrarAlerta("No hay geometría de línea en el mapa para editar.");
+                    desactivarTodo();
+                    return;
+                }
+                
+                var latlngs = lineas[0].getLatLngs();
+                
+                // GUARDAMOS EL BACKUP EXACTO ANTES DE EDITAR
+                backupEdicion = latlngs.map(ll => {
+                    var newLL = L.latLng(ll.lat, ll.lng);
+                    newLL.nombre = ll.nombre; 
+                    return newLL;
+                });
+                
+                // Creamos los puntos de trabajo editables
+                arrPuntos = latlngs.map(ll => {
+                    var newLL = L.latLng(ll.lat, ll.lng);
+                    newLL.nombre = ll.nombre; 
+                    return newLL;
+                });
+                
+                drawnItems.clearLayers(); 
+                customDibujando = true;
+                setModoBloqueo(true);
+                
+                document.getElementById('btn-editar').classList.add('activo-editar');
+                toolbar.style.display = 'flex';
+                toolbar.style.borderColor = 'var(--accent-yellow)';
+                toolbarText.innerHTML = "<span>MODO EDICIÓN: </span> <b>Arrastre</b> vértices o <span class='gis-shortcut'>1</span> Añadir <span class='gis-shortcut'>2</span> Borrar <span class='gis-shortcut'>3</span> Guardar <span class='gis-shortcut'>0</span> Cancelar (Descartar)";
+                
+                actualizarDibujoCustom();
             }
         }
 
+        async function manejarArchivo(event) {
+            var archivo = event.target.files[0]; if (!archivo) return;
+            var formData = new FormData(); formData.append("file", archivo);
+            
+            var statusDiv = document.getElementById('upload-status');
+            statusDiv.style.display = 'block';
+            statusDiv.style.color = 'var(--text-muted)';
+            statusDiv.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Procesando archivo...";
+            
+            try {
+                var response = await fetch('http://127.0.0.1:8000/upload-csv', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error((await response.json()).detail || "Error en el servidor");
+                var data = await response.json();
+                
+                drawnItems.clearLayers(); desactivarTodo();
+                
+                var nuevaLinea = L.polyline(data.puntos, { color: '#d14d5b', weight: 4, opacity: 0.9 });
+                
+                data.puntos.forEach((p, idx) => {
+                    nuevaLinea.getLatLngs()[idx].nombre = p.nombre;
+                    var icon = L.divIcon({ className: 'node-label', html: (idx + 1), iconSize: [18,18], iconAnchor: [9,9] });
+                    var marker = L.marker([p.lat, p.lng], { icon: icon, interactive: false });
+                    drawnItems.addLayer(marker);
+                });
+                
+                drawnItems.addLayer(nuevaLinea); map.fitBounds(nuevaLinea.getBounds());
+                
+                statusDiv.style.color = '#10b981';
+                statusDiv.innerHTML = `<i class='fa-solid fa-check'></i> ${data.puntos.length} apoyos importados`;
+                setTimeout(() => { statusDiv.style.display = 'none'; }, 4000);
+
+            } catch (error) { 
+                statusDiv.style.color = 'var(--accent-red)';
+                statusDiv.innerHTML = `<i class='fa-solid fa-xmark'></i> ${error.message}`;
+            } finally { 
+                event.target.value = ''; 
+            }
+        }
+
+        function pintarResultados(data) {
+            var content = document.getElementById('res-content');
+            var est = data.estadisticas_linea;
+            var cond = est.conductor_usado || "No especificado";
+            
+            var html = `
+                <div class="res-stats">
+                    <p style="color:var(--text-muted); font-style:italic; border-bottom:1px solid #404058; padding-bottom:5px; margin-bottom:8px;">Tipo de cable: <b>${cond}</b></p>
+                    <p>Punto más crítico: <span style="color:var(--accent-red)">${data.nodos[est.vano_critico_id - 1].nombre}</span></p>
+                    <p>Temperatura máxima: <span>${est.temp_max} °C</span></p>
+                    <p>Viento mínimo: <span>${est.viento_min} m/s</span></p>
+                </div>
+                <div class="section-title">Detalle meteorológico por poste</div>
+                <div class="res-nodos">
+            `;
+
+            data.nodos.forEach(function(n) {
+                var isCritico = (n.id_apoyo === est.vano_critico_id);
+                var classCritico = isCritico ? "nodo-item critico" : "nodo-item";
+                var iconAlert = isCritico ? "<i class='fa-solid fa-triangle-exclamation' style='color:var(--accent-red)' title='Punto más crítico de la línea'></i> " : "";
+                
+                html += `
+                    <div class="${classCritico}">
+                        <div class="nodo-title">${iconAlert}${n.nombre}</div>
+                        <div class="nodo-data">
+                            <div title="Temperatura Ambiente"><i class="fa-solid fa-temperature-half"></i> Temp: ${n.meteo.temperatura_C} °C</div>
+                            <div title="Velocidad del Viento"><i class="fa-solid fa-wind"></i> Viento: ${n.meteo.viento_vel_ms} m/s</div>
+                            <div title="Dirección del Viento"><i class="fa-solid fa-compass"></i> Dirección: ${n.meteo.viento_dir_grados}°</div>
+                            <div title="Radiación Solar Global"><i class="fa-solid fa-sun"></i> Radiación: ${n.meteo.radiacion_Wm2} W/m²</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += "</div>";
+            content.innerHTML = html;
+            document.getElementById('panel-resultados').style.display = 'flex';
+        }
 
         function enviarLinea() {
-            desactivarTodo();
             var capas = drawnItems.getLayers();
-            if (capas.length === 0) { alert("Defina una geometría primero."); return; }
+            var lineas = capas.filter(c => c instanceof L.Polyline && !(c instanceof L.Polygon));
+            
+            if (lineas.length === 0) {
+                mostrarAlerta("Debe definir la traza geométrica de la línea primero.");
+                return;
+            }
+            
+            var latlngs = lineas[0].getLatLngs().map((p, idx) => ({ 
+                lat: p.lat, 
+                lng: p.lng,
+                nombre: p.nombre || "Apoyo " + (idx + 1)
+            }));
+            
+            var tipoConductor = document.getElementById('conductor-type').value;
+            
+            var btnSubmit = document.getElementById('btn-calcular');
+            var txtOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Evaluando Condiciones...";
+            btnSubmit.disabled = true;
 
-            var latlngs = capas[0].getLatLngs();
-            var listaPuntos = latlngs.map(p => ({ lat: p.lat, lng: p.lng }));
+            fetch('http://127.0.0.1:8000/linea', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    puntos: latlngs,
+                    conductor: tipoConductor 
+                }) 
+            })
+            .then(res => res.json())
+            .then(data => {
+                btnSubmit.innerHTML = txtOriginal;
+                btnSubmit.disabled = false;
 
-            fetch('http://127.0.0.1:8000/linea', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ puntos: listaPuntos })
-            }).then(res => res.json()).then(data => alert("Ejecución enviada al servidor backend."))
-              .catch(err => alert("Fallo de conexión con el motor de cálculo (Uvicorn)."));
+                if (data.error) {
+                    mostrarAlerta("Error en el backend: " + data.error, true);
+                    return;
+                }
+                
+                pintarResultados(data);
+            })
+            .catch(err => {
+                btnSubmit.innerHTML = txtOriginal;
+                btnSubmit.disabled = false;
+                mostrarAlerta("Fallo de conexión con el motor termodinámico de Python.", true);
+            });
         }
     </script>
 </body>
