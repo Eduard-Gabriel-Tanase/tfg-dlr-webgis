@@ -1,0 +1,41 @@
+# Lineas que empiezan por # son comentarios, se ignoran al cargar el catalogo.
+# Separador: punto y coma (;)
+# Solo conductores ACSR (LA) o ACSR-AW (LARL). No anadir AAC/AAAC (sin nucleo de acero).
+#
+# ID       nombre del conductor + denominacion UNE-EN 50182 entre parentesis
+# D        diametro exterior total (mm)
+# D1       diametro del nucleo (mm)
+# d        diametro de cada alambre (mm)
+# TLO/THI  temperaturas de referencia baja/alta para la resistencia (C)
+# TCDRMAX  temperatura maxima admisible del conductor (C)
+# RLO/RHI  resistencia a TLO y THI (ohm/km)
+# HNH      numero de capas de aluminio (1 = 6/1, 2 = 26/7 o 30/7...)
+# HEATOUT  capacidad calorifica de la parte de aluminio
+# HEATCORE capacidad calorifica del nucleo (acero o acero+aluminio)
+# EMISS    emisividad de la superficie (0-1)
+# ABSORP   absortividad solar de la superficie (0-1)
+# MALUM    masa de aluminio por metro (kg/m)
+# MSTEEL   masa del nucleo por metro (kg/m)
+#
+#
+ID;D;D1;d;TLO;THI;TCDRMAX;RLO;RHI;HNH;HEATOUT;HEATCORE;EMISS;ABSORP;MALUM;MSTEEL
+LA-30 (27-AL1/4-ST1A);7.14;2.38;2.38;20;75;75;1.0736;1.3116;1;271;62;0.5;0.5;0.0722;0.0346
+LA-56 (47-AL1/8-ST1A);9.45;3.15;3.15;20;75;75;0.6129;0.7487;1;358;82;0.5;0.5;0.1264;0.0606
+LA-78 (67-AL1/11-ST1A);11.30;3.78;3.78;20;75;75;0.4256;0.5199;1;429;98;0.5;0.5;0.1820;0.0873
+LA-110 (94-AL1/22-ST1A);14.00;6.00;2.00;20;75;80;0.3067;0.3747;2;531;121;0.5;0.5;0.2548;0.1711
+LA-145 (119-AL1/28-ST1A);15.80;6.75;2.25;20;75;80;0.2423;0.2960;2;599;137;0.5;0.5;0.3224;0.2165
+LA-180 (147-AL1/34-ST1A);17.50;7.50;2.50;20;75;80;0.1963;0.2398;2;664;151;0.5;0.5;0.3980;0.2673
+LA-280 (242-AL1/39-ST1A HAWK);21.80;8.04;3.44;20;75;90;0.1195;0.1460;2;827;188;0.5;0.5;0.6532;0.3072
+LA-380 (337-AL1/44-ST1A GULL);25.40;8.46;2.82;20;75;90;0.0857;0.1047;2;963;220;0.5;0.5;0.9116;0.3401
+LA-455 (402-AL1/52-ST1A CONDOR);27.70;9.24;3.08;20;75;100;0.0719;0.0878;2;1050;239;0.5;0.5;1.0875;0.4058
+LA-545 (485-AL1/63-ST1A CARDINAL);30.40;10.10;3.38;20;75;100;0.0597;0.0729;2;1153;263;0.5;0.5;1.3097;0.4887
+LA-635 (565-AL1/72-ST1A FINCH);32.90;11.00;3.65;20;75;100;0.0512;0.0625;2;1248;284;0.5;0.5;1.5273;0.5568
+LARL-30 (27-AL1/4-A20SA);7.14;2.38;2.38;20;75;75;1.0175;1.2430;1;271;62;0.5;0.5;0.0722;0.0303
+LARL-56 (47-AL1/8-A20SA);9.45;3.15;3.15;20;75;75;0.5808;0.7095;1;358;82;0.5;0.5;0.1264;0.0530
+LARL-78 (67-AL1/11-A20SA);11.34;3.78;3.78;20;75;75;0.4033;0.4927;1;430;98;0.5;0.5;0.1820;0.0763
+LARL-125 (107-AL1/18-A20SA PENGUIN);14.31;4.77;4.77;20;75;80;0.2568;0.3137;1;543;124;0.5;0.5;0.2898;0.1215
+LARL-180 (147-AL1/34-A20SA);17.50;7.50;2.50;20;75;80;0.1818;0.2221;2;664;151;0.5;0.5;0.3980;0.2337
+LARL-280 (242-AL1/39-A20SA HAWK);21.80;8.04;3.44;20;75;90;0.1131;0.1382;2;827;188;0.5;0.5;0.6532;0.2685
+LARL-380 (337-AL1/44-A20SA GULL);25.38;8.46;2.82;20;75;90;0.0820;0.1002;2;962;219;0.5;0.5;0.9116;0.2973
+LARL-455 (402-AL1/52-A20SA CONDOR);27.72;9.24;3.08;20;75;100;0.0688;0.0840;2;1051;240;0.5;0.5;1.0875;0.3546
+LARL-545 (485-AL1/63-A20SA CARDINAL);30.42;10.14;3.38;20;75;100;0.0571;0.0698;2;1154;263;0.5;0.5;1.3097;0.4271
