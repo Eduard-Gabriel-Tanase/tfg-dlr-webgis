@@ -1,0 +1,9 @@
+services:
+  dlr-webgis:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: dlr-webgis
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
