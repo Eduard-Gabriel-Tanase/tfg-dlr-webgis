@@ -1,185 +1,117 @@
-# TFG — Plataforma Web-GIS para Estimación de Capacidad Dinámica de Líneas Aéreas (DLR)
+# TFG DLR Web-GIS
 
-Grado en Ingeniería Informática — Facultad de Ciencias — Universidad de Cantabria
+Plataforma web con componente GIS para el trazado y análisis de líneas eléctricas aéreas, con estimación de su capacidad dinámica (Dynamic Line Rating, DLR) a partir de datos meteorológicos ERA5-Land y el modelo térmico IEEE 738.
 
-Plataforma Web-GIS que permite definir la traza de una línea eléctrica aérea (mediante dibujo manual o importación de CSV/Excel), superponer capas meteorológicas (ERA5-Land) y estimar su capacidad dinámica (Dynamic Line Rating) mediante el modelo térmico IEEE 738, a través de la librería `pypacity`.
+## Instalación con Docker
 
----
+### Requisitos previos
 
-## Índice
-
-- [Guía de instalación](#guía-de-instalación)
-- [Guía de uso](#guía-de-uso)
-- [Despliegue con Docker](#despliegue-con-docker)
-- [Estructura del repositorio](#estructura-del-repositorio)
-- [Pruebas](#pruebas)
-
----
-
-## Guía de instalación
-
-Hay dos formas de tener el proyecto funcionando: **entorno virtual manual** (recomendado para desarrollo/depuración) o **Docker** (recomendado para una puesta en marcha rápida sin instalar dependencias de Python en el sistema).
-
-### Opción A — Entorno virtual (desarrollo)
-
-**Requisitos:** Python 3.14 y `pip`.
-
-1. Clona el repositorio y sitúate en la carpeta `backend/`.
-2. Crea y activa el entorno virtual:
-
-   ```bat
-   python -m venv venv
-   venv\Scripts\activate.bat
-   ```
-
-3. Instala las dependencias:
-
-   ```bat
-   pip install -r requirements.txt
-   ```
-
-4. Comprueba que existen los siguientes archivos de datos (no se generan automáticamente, deben estar en el repositorio o añadirse manualmente):
-   - `backend/weather_data/data.nc` — dataset meteorológico ERA5-Land.
-   - `backend/catalog/spanish_overhead_conductor_catalog.csv` — catálogo de conductores por defecto.
-
-### Opción B — Docker
-
-Ver la sección [Despliegue con Docker](#despliegue-con-docker) más abajo.
-
----
-
-## Guía de uso
-
-### Inicialización del BACKEND
-
-Con el entorno virtual activado:
-
-```bat
-venv\Scripts\activate.bat
-uvicorn main:app --reload
-```
-
-El backend queda escuchando en `http://127.0.0.1:8000`.
-
-### Inicialización del FRONTEND
-
-El frontend (`frontend/index.html`) es un archivo estático sin build. Basta con abrirlo directamente en el navegador, o servirlo con un servidor HTTP simple:
-
-```bat
-cd frontend
-python -m http.server 5500
-```
-
-### Acceso a la aplicación
-
-Con ambos servicios activos:
-
-**http://localhost:5500**
-
-El frontend está configurado para consultar la API en `http://127.0.0.1:8000` (variable `API_BASE` en `index.html`). El backend permite peticiones de cualquier origen (CORS abierto), por lo que el frontend puede abrirse igualmente como archivo local (`file://`) sin necesidad del servidor de la Opción B, siempre que el backend esté activo en el puerto 8000.
-
-### Flujo básico de uso
-
-1. **Definir la línea**: mediante trazado manual sobre el mapa (botón "Trazado Manual", atajos de teclado `1`/`2`/`3`/`0`) o importando un archivo CSV/Excel con columnas UTM (`X`, `Y`) o geográficas (`LATITUD`, `LONGITUD`).
-2. **Seleccionar el conductor**: desde el catálogo por defecto, o subiendo un catálogo propio (sección "Catálogo de conductores").
-3. **Ajustar filtros**: año/mes de la meteorología ERA5-Land a utilizar, y temperatura máxima admisible del conductor si se desea sobrescribir la del catálogo.
-4. **Calcular DLR**: botón "Calcular DLR". El resultado se muestra en la pestaña "Resultados", con comparación frente al rating estático de referencia, distribución de ampacidad por vano y detalle del vano crítico.
-5. **Exportar**: la línea puede exportarse de nuevo a CSV, y el informe de resultados puede descargarse como PDF.
-
----
-
-## Despliegue con Docker
-
-El backend y el frontend estático se distribuyen en un único contenedor. Se recomienda para probar la aplicación en una máquina distinta a la de desarrollo sin instalar Python ni sus dependencias directamente en el sistema.
-
-### Requisitos
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y en ejecución (en Windows requiere WSL2 y virtualización activada en la BIOS).
+- Docker y Docker Compose instalados en el sistema.
 
 ### Puesta en marcha
 
-Desde la raíz del repositorio:
+Desde la raíz del repositorio, construir y levantar el contenedor:
 
 ```bash
 docker compose up --build
 ```
 
-La primera ejecución tarda varios minutos, ya que descarga la imagen base de Python e instala todas las dependencias. Las siguientes ejecuciones son mucho más rápidas gracias a la caché de capas de Docker.
+La aplicación se sirve íntegramente (backend y frontend) desde un único contenedor a través de FastAPI, en el puerto 8000. Una vez esté en marcha, acceder desde el navegador en:
 
-Cuando el registro muestre `Uvicorn running on http://0.0.0.0:8000`, la aplicación está lista.
+**http://localhost:8000**
 
-### Acceso
-
-Backend (API): **http://localhost:8000**
-
-Frontend: se abre directamente el archivo `frontend/index.html` en el navegador (ver nota de CORS en la sección anterior), con el contenedor Docker sirviendo la API en el puerto 8000.
-
-### Detener el contenedor
+Para detener la aplicación:
 
 ```bash
 docker compose down
 ```
 
-### Archivos relacionados con Docker
-
-| Archivo | Ubicación | Función |
-|---|---|---|
-| `Dockerfile` | `backend/Dockerfile` | Receta de construcción de la imagen: instala dependencias de sistema y de Python, y copia el código, el dataset meteorológico y el catálogo de conductores. |
-| `docker-compose.yml` | raíz del repositorio | Define el servicio `dlr-webgis`, construye la imagen a partir del `Dockerfile` y publica el puerto 8000. |
-| `requirements.txt` | `backend/requirements.txt` | Dependencias de Python necesarias para ejecutar la aplicación (no incluye dependencias de desarrollo/pruebas, como Playwright o pytest). |
-
 ---
 
-## Estructura del repositorio
+## Guía de usuario
 
-```
-tfg-dlr-webgis/
-├── docker-compose.yml
-├── README.md
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── main.py                  # API FastAPI: importación de líneas, catálogo de conductores,
-│   │                             # capas meteorológicas ERA5-Land y motor de cálculo DLR (IEEE 738).
-│   ├── weather_data/
-│   │   └── data.nc              # Dataset meteorológico ERA5-Land.
-│   ├── catalog/
-│   │   └── spanish_overhead_conductor_catalog.csv
-│   └── tests/
-│       ├── test_carga_csv.py         # Pruebas de integración (backend en memoria, FastAPI TestClient).
-│       ├── test_e2e_navegador.py     # Pruebas end-to-end (navegador real, Playwright).
-│       ├── fixtures_csv/             # Archivos CSV de prueba para la importación de línea.
-│       └── fixtures_catalogo/        # Archivos CSV de prueba para el catálogo de conductores.
-├── frontend/
-│   └── index.html                # Interfaz Web-GIS (Leaflet + Chart.js), sin build ni dependencias.
-└── datasets/
-    └── ...                       # Líneas de ejemplo para pruebas manuales.
-```
+### Vista general
 
----
+La interfaz se divide en dos zonas: un panel lateral con todas las herramientas y opciones, y una zona principal con dos pestañas, **Mapa** y **Resultados**. La pestaña de Resultados permanece deshabilitada hasta que se realiza un cálculo.
 
-## Pruebas
+El mapa muestra por defecto la Península y permite navegar con el ratón (arrastrar para desplazar, rueda para hacer zoom).
 
-El proyecto cuenta con dos niveles de pruebas automatizadas sobre el módulo de carga de datos (importación de línea y catálogo de conductores), documentadas con su taxonomía de casos en `Anexo_Pruebas_TFG` (memoria).
+### Definir la geometría de la línea
 
-### Pruebas de integración (backend en memoria)
+Hay dos formas de definir el trazado de una línea: dibujándolo directamente sobre el mapa o importándolo desde un archivo.
 
-No requieren tener el servidor arrancado; ejecutan el backend real en memoria mediante `TestClient` de FastAPI.
+**Trazado manual**
 
-```bat
-venv\Scripts\activate.bat
-pip install pytest httpx
-pytest backend\tests\test_carga_csv.py -v
-```
+Al pulsar "Trazado Manual" se activa el modo de dibujo y aparece una barra de atajos en la parte inferior del mapa:
 
-### Pruebas end-to-end (navegador real)
+- Tecla **1**: añade un vértice en la posición actual del cursor.
+- Tecla **2**: deshace el último vértice añadido.
+- Tecla **3**: finaliza el trazado (requiere al menos dos apoyos).
+- Tecla **0**: cancela el dibujo en curso.
 
-Requieren el backend arrancado con `uvicorn` en una terminal aparte, y automatizan la interacción real con `frontend/index.html` mediante un navegador Chromium controlado por Playwright.
+Si ya existe una línea en el mapa y se pulsa "Trazado Manual" de nuevo, la aplicación pregunta si se quiere editar la línea existente o borrarla para empezar una nueva.
 
-```bat
-pip install pytest-playwright
-playwright install chromium
-pytest backend\tests\test_e2e_navegador.py -v
-```
+**Edición de vértices**
 
-Estas dependencias de pruebas (`pytest`, `pytest-playwright`) son exclusivas del entorno de desarrollo y no forman parte de `backend/requirements.txt` ni de la imagen Docker de producción.
+El botón "Editar Vértices" permite arrastrar cualquier punto de una línea ya trazada para reposicionarlo, añadir apoyos intermedios o eliminarlos, usando los mismos atajos de teclado (añadir, quitar, guardar o descartar los cambios).
+
+**Eliminar traza**
+
+Borra por completo la línea actual del mapa.
+
+**Importar línea**
+
+El botón "Importar" acepta archivos CSV, XLSX o XLS. El archivo puede venir en dos formatos de coordenadas:
+
+- Columnas **X, Y** en UTM (huso 30N).
+- Columnas **LATITUD, LONGITUD** (o variantes como LAT/LON) en WGS84.
+
+Opcionalmente puede incluir una columna de altura o cota (Z, ALTURA, ELEVACION, etc.) y un nombre de apoyo (STRUCTURE COMMENT). Si el archivo trae la marca BOM característica de los CSV exportados por Excel, se procesa sin problema.
+
+Tras importar, si el sistema detecta apoyos a menos de un metro de distancia entre sí (posibles duplicados) o vanos superiores a 5 km (posibles valores atípicos), se muestra un aviso detallado con los apoyos implicados, sin llegar a bloquear la importación.
+
+**Exportar línea**
+
+El botón "Exportar" descarga la traza actual como un CSV con coordenadas UTM, distancia acumulada (station) y ángulo por vano, listo para reutilizarse o compartirse.
+
+### Capas meteorológicas
+
+En el selector de capas del mapa (esquina superior derecha) se puede superponer una de tres variables climáticas, generadas a partir de datos ERA5-Land:
+
+- **Temperatura ambiente**
+- **Velocidad del viento**
+- **Radiación solar global**
+
+Cada capa se acompaña de una leyenda de color con su escala de valores. El panel lateral incluye un filtro temporal por año y mes para consultar la media histórica de esa combinación concreta; si no se selecciona ninguno, se muestra la media de todo el periodo disponible.
+
+### Parámetros de línea y catálogo de conductores
+
+En el panel lateral, el desplegable de conductor carga el catálogo activo y muestra su diámetro nominal.
+
+Junto al diámetro aparece el control de **temperatura máxima admisible** del conductor: un slider acompañado de un campo numérico editable a mano, ambos sincronizados entre sí. Al seleccionar un conductor, el slider se ajusta automáticamente a su rango de temperaturas de diseño (definido en el propio catálogo) y toma como valor por defecto la temperatura máxima nominal de ese conductor. Este valor puede modificarse antes de calcular, para estudiar el DLR bajo un límite térmico distinto al nominal, y es el que finalmente se envía al backend como temperatura máxima del conductor (`tempmax_override`) en el cálculo.
+
+El catálogo por defecto es un listado de conductores tipo utilizado habitualmente en líneas aéreas españolas, pero puede sustituirse por uno propio:
+
+- **Descargar**: obtiene el catálogo que está activo en ese momento en formato CSV.
+- **Subir**: permite cargar un catálogo propio en CSV, siempre que respete las columnas requeridas por el sistema.
+- **Volver al catálogo por defecto**: descarta el catálogo personalizado y restaura el original.
+
+Si el catálogo activo tiene algún problema (columnas faltantes, valores no numéricos, identificadores duplicados, etc.), la interfaz muestra un aviso explicando el motivo y bloquea el cálculo hasta que se resuelva.
+
+### Cálculo de la capacidad dinámica (DLR)
+
+Con una línea definida y un conductor seleccionado, el botón "Calcular DLR" envía la petición al backend, que evalúa cada vano de forma independiente aplicando el modelo térmico IEEE 738 con las condiciones meteorológicas locales de sus dos apoyos y la temperatura máxima admisible fijada en el slider. El cálculo tarda unos segundos mientras se consultan los datos climáticos.
+
+### Panel de resultados
+
+Al finalizar el cálculo se habilita la pestaña "Resultados", con un informe estructurado en varios bloques:
+
+- **Resumen**: vano más crítico de la línea, y ampacidad mínima, media y máxima obtenidas.
+- **Comparación con rating estático**: barras comparativas entre el DLR calculado y un rating estático de referencia (40°C, viento de 0,61 m/s), junto con el porcentaje de ganancia o pérdida de capacidad.
+- **Distribución de ampacidad**: una curva de densidad (KDE) que muestra cómo se reparten los valores de ampacidad entre los distintos vanos de la línea, con los percentiles P10, P50 y P90 marcados.
+- **Detalles interesantes**: condiciones meteorológicas exactas del vano más crítico, con un botón para localizarlo directamente en el mapa, además de las peores condiciones individuales de temperatura, viento y radiación registradas en toda la línea.
+- **Detalle por vano**: listado completo de todos los tramos con su ampacidad y condiciones meteorológicas particulares, destacando el vano crítico.
+
+**Exportar informe a PDF**
+
+El icono de PDF en la cabecera del panel de resultados genera un informe descargable de varias páginas con el resumen, la comparación con el rating estático, la curva de distribución y el detalle de las condiciones más críticas de la línea.
